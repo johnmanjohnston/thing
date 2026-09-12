@@ -1,27 +1,49 @@
-#include "pico/cyw43_arch.h"
-#include "pico/stdlib.h"
 #include "servo.h"
 #include <hardware/pwm.h>
+#include <lwip/tcp.h>
+#include <lwip/tcpbase.h>
+#include <lwipopts.h>
+#include <pico/cyw43_arch.h>
+#include <pico/stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-/*
-#define SERVO_PIN 16
+static const char* header =
+	"HTTP/1.1 200 OK\r\nContent-type: text/html\r\n\r\n";
+static const char* webpage = "<!DOCTYPE html> <html><head><title>super cool "
+							 "webpage aaa %d</title></head></html>";
 
-void set_ms(int servo_pin, float ms) {
-	pwm_set_gpio_level(servo_pin, (ms / 9000.f) * 39062.f);
+static err_t recv_cb(void* arg, struct tcp_pcb* pcb, struct pbuf* p, err_t e) {
+	if (p == NULL) {
+		tcp_close(pcb);
+		return ERR_CLSD;
+	}
+
+	char buf[256];
+	snprintf(buf, sizeof(buf), webpage, rand());
+
+	tcp_write(pcb, header, strlen(header), TCP_WRITE_FLAG_COPY);
+	// tcp_write(pcb, webpage, strlen(webpage), TCP_WRITE_FLAG_COPY);
+	tcp_write(pcb, buf, strlen(buf), TCP_WRITE_FLAG_COPY);
+	tcp_output(pcb);
+
+	tcp_recved(pcb, p->tot_len);
+	pbuf_free(p);
+	tcp_close(pcb);
+
+	cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
+	sleep_ms(100);
+	cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
+
+	return ERR_OK;
 }
 
-void set_servo(float cur_ms) {
-	gpio_set_function(SERVO_PIN, GPIO_FUNC_PWM);
-	uint slice = pwm_gpio_to_slice_num(SERVO_PIN);
-
-	pwm_config cfg = pwm_get_default_config();
-	pwm_config_set_clkdiv(&cfg, 64.f);
-	pwm_config_set_wrap(&cfg, 39062.f);
-
-	pwm_init(slice, &cfg, true);
-	set_ms(SERVO_PIN, cur_ms);
-}*/
+static err_t req_accept(void* arg, struct tcp_pcb* pcb, err_t t) {
+	tcp_recv(pcb, recv_cb);
+	return ERR_OK;
+}
 
 int main() {
 	stdio_init_all();
@@ -32,29 +54,28 @@ int main() {
 		return -1;
 	}
 
-	// Example to turn on the Pico W LED
+	// led flash
 	cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
+	sleep_ms(100);
+	cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
 
-	servo s;
-	servo_init(&s, 16, 1);
-
-	for (int i = 0; i <= 50; ++i) {
-		servo_set(&s, i % 2);
-		sleep_ms(128);
-
-		if (i % 2 == 0)
-			sleep_ms(2048);
-	}
-
-	servo_set_active(&s, 0);
-
-	while (true) {
-		/*
+	cyw43_arch_enable_sta_mode();
+	if (cyw43_arch_wifi_connect_timeout_ms("RAJNEW", "1133557799",
+										   CYW43_AUTH_WPA2_AES_PSK, 8000)) {
+	} else {
 		cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
-		sleep_ms(1000);
-		cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
-		sleep_ms(1000);*/
-
-		sleep_ms(10);
 	}
+
+	struct tcp_pcb* pcb = tcp_new();
+	tcp_bind(pcb, IP_ADDR_ANY, 80);
+	pcb = tcp_listen(pcb);
+	tcp_accept(pcb, req_accept);
+
+	srand(time(NULL));
+	while (1) {
+		cyw43_arch_poll();
+		sleep_ms(1);
+	}
+
+	return 0;
 }

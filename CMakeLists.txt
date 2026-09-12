@@ -51,11 +51,12 @@ pico_enable_stdio_usb(thing 0)
 target_link_libraries(thing
         pico_stdlib
         hardware_pwm
+        pico_cyw43_arch_lwip_threadsafe_background
     )
 
 # Add the standard include files to the build
 target_include_directories(thing PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/src
 )
 
 # Add any user requested libraries
