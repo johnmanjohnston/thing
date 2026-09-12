@@ -38,6 +38,7 @@ pico_sdk_init()
 add_executable(thing
     src/main.c 
     src/servo.c
+    src/ac.c
 )
 
 pico_set_program_name(thing "thing")

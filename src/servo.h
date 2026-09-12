@@ -1,3 +1,5 @@
+#pragma once
+
 struct {
 	unsigned int gpio;
 	unsigned int invert_push_direction;
