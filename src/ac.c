@@ -7,7 +7,7 @@ servo s3;
 
 void init_servos() {
 	servo_init(&s1, 16, 1);
-	// servo_init(&s2, 16, 1);
+	servo_init(&s2, 15, 1);
 	// servo_init(&s3, 16, 1);
 }
 
