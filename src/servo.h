@@ -2,12 +2,13 @@
 
 struct {
 	unsigned int gpio;
-	unsigned int invert_push_direction;
 	unsigned int slice;
+	unsigned int invert_push_direction;
+	float force_multiplier;
 } typedef servo;
 
-void servo_init(servo* s, unsigned int gpio,
-				unsigned int invert_push_direction);
+void servo_init(servo* s, unsigned int gpio, unsigned int invert_push_direction,
+				float mul);
 void servo_set(servo* s, unsigned int value);
 void servo_set_active(servo* s, unsigned int active);
 

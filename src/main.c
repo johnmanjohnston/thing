@@ -70,6 +70,9 @@ static err_t recv_cb(void* arg, struct tcp_pcb* pcb, struct pbuf* p, err_t e) {
 	} else if (cmd == CMD_DOWN) {
 		tcp_write(pcb, "ok", 2, TCP_WRITE_FLAG_COPY);
 		push_button(&s2);
+	} else if (cmd == CMD_UP) {
+		tcp_write(pcb, "ok", 2, TCP_WRITE_FLAG_COPY);
+		push_button(&s3);
 	}
 
 	tcp_output(pcb);
