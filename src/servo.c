@@ -28,6 +28,7 @@ void servo_set(servo* s, unsigned int value) {
 		uint16_t level = SERVO_DEFAULT_GPIO_LEVEL;
 		level = level + (s->invert_push_direction ? SERVO_PUSHED_GPIO_DELTA
 												  : -SERVO_PUSHED_GPIO_DELTA);
+		level *= s->force_multiplier;
 		pwm_set_gpio_level(s->gpio, level);
 	}
 }

@@ -120,7 +120,11 @@ int main() {
 	pcb = tcp_listen(pcb);
 	tcp_accept(pcb, req_accept);
 
-	srand(time(NULL));
+	// led flash
+	cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
+	sleep_ms(100);
+	cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
+
 	while (1) {
 		cyw43_arch_poll();
 		sleep_ms(1);
