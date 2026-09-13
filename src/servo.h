@@ -5,10 +5,11 @@ struct {
 	unsigned int slice;
 	unsigned int invert_push_direction;
 	float force_multiplier;
+	float time_multiplier;
 } typedef servo;
 
 void servo_init(servo* s, unsigned int gpio, unsigned int invert_push_direction,
-				float mul);
+				float fmul, float tmul);
 void servo_set(servo* s, unsigned int value);
 void servo_set_active(servo* s, unsigned int active);
 

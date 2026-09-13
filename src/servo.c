@@ -4,10 +4,11 @@
 #include <hardware/pwm.h>
 
 void servo_init(servo* s, unsigned int gpio, unsigned int invert_push_direction,
-				float mul) {
+				float fmul, float tmul) {
 	s->gpio = gpio;
 	s->invert_push_direction = invert_push_direction;
-	s->force_multiplier = mul;
+	s->force_multiplier = fmul;
+	s->time_multiplier = tmul;
 	gpio_set_function(s->gpio, GPIO_FUNC_PWM);
 
 	s->slice = pwm_gpio_to_slice_num(s->gpio);
