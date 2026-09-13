@@ -6,10 +6,10 @@
 #include <pico/stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "ac.h"
+#include "webpage.h"
 
 #define CMD_NULL 0x0
 #define CMD_TOGGLE 0x1
@@ -18,21 +18,6 @@
 
 static const char* header =
 	"HTTP/1.1 200 OK\r\nContent-type: text/html\r\n\r\n";
-static const char* webpage =
-	"<!DOCTYPE html>"
-	"<head>"
-	"<title>ac</title>"
-	"<meta name=\"viewport\" content=\"width=device-width, user-scalable=no\">"
-	"<style>"
-	"body, html { font-size: 4em; }"
-	"</style>"
-	"</head>"
-	"<body>"
-	"<button onclick=\"fetch('/tog')\">On/Off</button>"
-	"<button onclick=\"fetch('/inc')\">Increase</button>"
-	"<button onclick=\"fetch('/dec')\">Decrease</button>"
-	"</body"
-	"</html>";
 
 int parse_route(char* route) {
 	if (strncmp(route, "GET /tog", 8) == 0)
@@ -51,19 +36,15 @@ static err_t recv_cb(void* arg, struct tcp_pcb* pcb, struct pbuf* p, err_t e) {
 		return ERR_CLSD;
 	}
 
+	cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
+
 	// check route
 	int cmd = parse_route((char*)p->payload);
 
 	tcp_write(pcb, header, strlen(header), TCP_WRITE_FLAG_COPY);
 
 	if (cmd == CMD_NULL) {
-		char buf[512];
-		// snprintf(buf, sizeof(buf), webpage, cmd, (char*)p->payload);
-		strcpy(buf, webpage);
-
-		// tcp_write(pcb, webpage, strlen(webpage), TCP_WRITE_FLAG_COPY);
-		tcp_write(pcb, buf, strlen(buf), TCP_WRITE_FLAG_COPY);
-
+		tcp_write(pcb, webpage, strlen(webpage), TCP_WRITE_FLAG_COPY);
 	} else if (cmd == CMD_TOGGLE) {
 		tcp_write(pcb, "ok", 2, TCP_WRITE_FLAG_COPY);
 		push_button(&s1);
@@ -80,8 +61,6 @@ static err_t recv_cb(void* arg, struct tcp_pcb* pcb, struct pbuf* p, err_t e) {
 	pbuf_free(p);
 	tcp_close(pcb);
 
-	cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
-	sleep_ms(100);
 	cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
 
 	return ERR_OK;
