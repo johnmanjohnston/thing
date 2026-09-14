@@ -1,3 +1,4 @@
+#include <cyw43_ll.h>
 #include <hardware/pwm.h>
 #include <lwip/tcp.h>
 #include <lwip/tcpbase.h>
@@ -86,6 +87,7 @@ int main() {
 	cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
 
 	cyw43_arch_enable_sta_mode();
+	cyw43_wifi_pm(&cyw43_state, CYW43_NO_POWERSAVE_MODE);
 	if (cyw43_arch_wifi_connect_timeout_ms("RAJNEW", "1133557799",
 										   CYW43_AUTH_WPA2_AES_PSK, 8000)) {
 	} else {
